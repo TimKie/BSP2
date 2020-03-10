@@ -30,7 +30,7 @@ def crossover_parents(parent1, parent2):
     crossover_point = random.randrange(0, len(parent1)+1)
     if crossover_point == 0 or crossover_point == len(parent1) or crossover_point == len(parent2):          # if the crossover point is 0 or len(parent1) or len(parent2), a new crossover point is generated
         crossover_point = random.randrange(0, len(parent1) + 1)
-    print("Crossover Point:", crossover_point)                                                              # print the crossover point to the console to check if the function works correctly
+    print("Crossover Point: ", crossover_point)                                                             # print the crossover point to the console to check if the function works correctly
     child1 = parent1[:crossover_point] + parent2[crossover_point:]
     child2 = parent2[:crossover_point] + parent1[crossover_point:]
     return child1, child2
@@ -75,8 +75,8 @@ print()
 
 popSize = 8
 p = generate_population(popSize, len(target))
-print("Population:", p)
+print("Population:      ", p)
 p1 = p[random.randrange(0, popSize)]
 p2 = p[random.randrange(0, popSize)]
 # we generate children with two randomly picked parents from the population
-print("Children:", crossover_parents(p1, p2), "from parent1 "+"\'"+p1+"\'"+" and parent2 "+"\'"+p2+"\'")
+print("Children:        ", crossover_parents(p1, p2), "from parent1 "+"\'"+p1+"\'"+" and parent2 "+"\'"+p2+"\'")

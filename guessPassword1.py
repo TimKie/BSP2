@@ -50,6 +50,22 @@ def display(guess):
     print("{}\t{}\t{}".format(guess, fitness, timeDiff))
 
 
+def roulette_wheel_selection (pop, num_of_parents):
+    parents = []
+    fitness_sum = 0
+    for elem in pop:
+        fitness_sum += get_fitness(elem)                                                                    # get the fitness of the whole population (total fitness)
+    fitness_of_individuals = [get_fitness(elem) / fitness_sum for elem in pop]                              # store the fitness of each individual divided by the total fitness in a list (number between 0 and 1)
+    probabilities = [sum(fitness_of_individuals[:i + 1]) for i in range(len(fitness_of_individuals))]       # make a list with intervals where the individuals can be selected later (individuals with higher fitness have greater interval)
+    for i in range(num_of_parents):
+        r = random.random()                                                                                 # a number between 0 and 1
+        for (n, individual) in enumerate(pop):                                                              # for every individual in the population (i is the index of the individual)
+            if r <= probabilities[n]:                                                                       # the individual is selected when r is in the interval of the individual
+                parents.append(individual)
+                break                                                                                       # after one parent is found and added to the final list, we break the loop
+    return parents
+
+
 # Main Program
 random.seed()
 startTime = datetime.datetime.now()
@@ -80,3 +96,7 @@ p1 = p[random.randrange(0, popSize)]
 p2 = p[random.randrange(0, popSize)]
 # we generate children with two randomly picked parents from the population
 print("Children:        ", crossover_parents(p1, p2), "from parent1 "+"\'"+p1+"\'"+" and parent2 "+"\'"+p2+"\'")
+
+print()
+
+print(roulette_wheel_selection(p, 5))

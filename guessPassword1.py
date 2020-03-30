@@ -50,7 +50,7 @@ def display(guess):
     print("{}\t{}\t{}".format(guess, fitness, timeDiff))
 
 
-def roulette_wheel_selection (pop, num_of_parents):
+def roulette_wheel_selection(pop, num_of_parents):
     parents = []
     fitness_sum = 0
     for elem in pop:

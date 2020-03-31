@@ -2,11 +2,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import tensorflow as tf
 
 class NeuralNetwork:
-    def __init__(self, activation_function, number_of_neurons, optimizer):
+    def __init__(self, activation_function, number_of_neurons, optimizer,dropout):
         self.act = activation_function
         self.neurons = number_of_neurons
         self.opt = optimizer
-
+        self.drop = dropout
+        
+    def build(self):
         mnist = tf.keras.datasets.mnist
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
         x_train, x_test = x_train / 255.0, x_test / 255.0
@@ -14,7 +16,7 @@ class NeuralNetwork:
         model = tf.keras.models.Sequential([
             tf.keras.layers.Flatten(input_shape=(28, 28)),
             tf.keras.layers.Dense(self.neurons, activation=self.act),
-            tf.keras.layers.Dropout(0.2),
+            tf.keras.layers.Dropout(self.drop),
             tf.keras.layers.Dense(10)
         ])
 
@@ -29,8 +31,10 @@ class NeuralNetwork:
                       metrics=['accuracy'])
 
         model.fit(x_train, y_train, epochs=5)
+    
+        return(model.evaluate(x_test, y_test, verbose=2)[1])                # return the accuracy of the evaluation of the NN to use it for the get_fitness function in the MainProgramm
 
-        model.evaluate(x_test, y_test, verbose=2)
 
+nn = NeuralNetwork("relu", 128, "adam", 0.2)
 
-nn = NeuralNetwork("relu", 128, "adam")
+nn.build()

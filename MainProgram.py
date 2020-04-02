@@ -4,11 +4,11 @@ import random
 
 
 def generate_individual():
-    activation_functions = ["Sigmoid", "TanH", "ReLU", "Softmax"]
-    number_of_neurons = []          # depends on the input of the NN
-    optimizers = ["Gradient Descent", "Adam"]
+    activation_functions = ["sigmoid", "tanh", "relu", "softmax"]
+    number_of_neurons = [128]          # depends on the input of the NN
+    optimizers = ["adam"]
     dropout_values = [0.5, 0.6, 0.7, 0.8]
-    final_set = {"activation_function": random.choice(activation_functions), "number_of_neurons" : number_of_neurons, "optimizer": random.choice(optimizers), "dropout": random.choice(dropout_values)}
+    final_set = {"activation_function": random.choice(activation_functions), "number_of_neurons" : random.choice(number_of_neurons), "optimizer": random.choice(optimizers), "dropout": random.choice(dropout_values)}
     return final_set
 
 
@@ -22,10 +22,19 @@ def get_fitness(individual):
 # directly the fitness score received by this function ("get_fitness") without calculating anything)
 
 
+def generate_population(popSize):
+    pop = []
+    for i in range(popSize):
+        p = generate_individual()
+        pop.append(p)
+    return pop
+
+
 # Test Code
-print(generate_individual())
 
-# ------------------------------------------------------
-
-ind = {"activation_function": "relu", "number_of_neurons" : 128, "optimizer": "adam", "dropout": 0.2}       # to test the same nn as in the digit recognition example (same hyper-parameters)
-print("The fitness value of the individual",ind,"is:",get_fitness(ind))
+pop_size = 2
+p = generate_population(pop_size)
+total_fit = []
+for ind in p:
+    total_fit.append(get_fitness(ind))
+print("The fitness values of the individuals in the population are:",total_fit)

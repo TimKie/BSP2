@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import tensorflow as tf
 
 class NeuralNetwork:
-    def __init__(self, activation_function, number_of_neurons, optimizer,dropout):
+    def __init__(self, activation_function, number_of_neurons, optimizer, dropout):
         self.act = activation_function
         self.neurons = number_of_neurons
         self.opt = optimizer
@@ -35,6 +35,6 @@ class NeuralNetwork:
         return(model.evaluate(x_test, y_test, verbose=2)[1])                # return the accuracy of the evaluation of the NN to use it for the get_fitness function in the MainProgramm
 
 
-nn = NeuralNetwork("relu", 128, "adam", 0.2)
-
-nn.build()
+if __name__ == "__main__":
+    nn = NeuralNetwork("relu", 128, "adam", 0.2)
+    nn.build()

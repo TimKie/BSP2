@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from Neural_Network import NeuralNetwork
 import random
+import itertools
 
 activation_functions = ["sigmoid", "tanh", "relu", "softmax"]
 number_of_neurons = [128]  # depends on the input of the NN
@@ -50,6 +51,20 @@ def mutation(pop):
                 break
 
 
+def crossover(individual1, individual2):
+    crossPoint = random.randrange(1, len(individual1)+1)
+    child1_part1 = dict(list(individual1.items())[0: crossPoint])               # part from individual 1 for child 1 (genes before crossPoint)
+    child1_part2 = dict(list(individual2.items())[crossPoint::])                # part from individual 2 for child 1 (genes after crossPoint)
+    child1 = {**child1_part1, **child1_part2}                                   # combining the two parts to create child 1
+
+    child2_part1 = dict(list(individual2.items())[0: crossPoint])               # part from individual 2 for child 2 (genes before crossPoint)
+    child2_part2 = dict(list(individual1.items())[crossPoint::])                # part from individual 1 for child 2 (genes after crossPoint)
+    child2 = {**child2_part1, **child2_part2}                                   # combining the two parts to create child 2
+    
+    return [child1, child2]
+
+
+
 # Test Code
 
 pop_size = 2
@@ -68,3 +83,12 @@ print("population after mutation:")
 mutation(p)                                         # often we don't see what has changed because we don't have much hyper-parameters at the moment
                                                     # and each hyper-parameter doesn't have a lot of different values, thus the function often changes
                                                     # the values of a hyper-parameter to the same one again
+print()
+
+for i in range(0, len(p), 2):
+    ind1 = p[i]
+    ind2 = p[i+1]
+    print("Individual 1:", ind1)
+    print("Individual 2:", ind2)
+    print("children:", crossover(ind1, ind2))
+    

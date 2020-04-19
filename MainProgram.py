@@ -33,9 +33,10 @@ def generate_population(popSize):
 
 
 def mutation(pop):
+    mutated_pop = []
     for individual in pop:
         mutProb = random.uniform(0, 0.5)                                # at most 50% of the genes can be changed because the mutation probability will be generated between 0% and 50%
-        for i in range(1,len(individual)+1):                            # i will iterate for 1 to the len of the individual (number of hyper-parameters that could be changed)
+        for i in range(1, len(individual)+1):                           # i will iterate from 1 to the len of the individual (number of hyper-parameters that could be changed)
             if (mutProb * len(individual)) < i:                         # i represents the number of genes (hyper-parameters) which will be changed
                 for j in range(i):                                      # we change as many genes as the values of i is (e.g. if i=2 then 2 hyper-parameters will be changed)
                     g = random.choice(list(individual.keys()))          # we take one random gene (hyper-parameter) of the chromosome to change it 
@@ -47,8 +48,25 @@ def mutation(pop):
                         individual[g] = random.choice(optimizers)
                     if g == "dropout":
                         individual[g] = random.choice(dropout_values)
-                print(individual)
+                mutated_pop.append(individual)
                 break
+    return mutated_pop
+
+
+def roulette_wheel_selection(pop, num_of_parents):
+    parents = []
+    fitness_sum = 0
+    for elem in pop:
+        fitness_sum += get_fitness(elem)                                                                    # get the fitness of the whole population (total fitness)
+    fitness_of_individuals = [get_fitness(elem) / fitness_sum for elem in pop]                              # store the fitness of each individual divided by the total fitness in a list (number between 0 and 1)
+    probabilities = [sum(fitness_of_individuals[:i + 1]) for i in range(len(fitness_of_individuals))]       # make a list with intervals where the individuals can be selected later (individuals with higher fitness have greater interval)
+    for i in range(num_of_parents):
+        r = random.random()                                                                                 # a number between 0 and 1
+        for (n, individual) in enumerate(pop):                                                              # for every individual in the population (i is the index of the individual)
+            if r <= probabilities[n]:                                                                       # the individual is selected when r is in the interval of the individual
+                parents.append(individual)
+                break                                                                                       # after one parent is found and added to the final list, we break the loop
+    return parents
 
 
 def crossover(individual1, individual2):
@@ -64,31 +82,24 @@ def crossover(individual1, individual2):
     return [child1, child2]
 
 
+def crossover_population(pop):
+    new_pop = []
+    for i in range(len(pop) // 2):                                              # we take in range "len(pop) // 2" because there are always two elements removed
+        parents = roulette_wheel_selection(pop, 2)                              # we choose two parents out of the population
+        pop.remove(parents[0])                                                  # we delete the two parents that we chose out of the population such that
+        if parents[1] in pop:                                                   # this if statement is necessary because sometimes I got an error message that parents[1] is no tn the list and thus cannot be removed
+            pop.remove(parents[1])                                              # they cannot be selected again as parents
+        new_pop += crossover(parents[0], parents[1])                            # add the offspring to the list which contains the new generation
+    return new_pop
+
 
 # Test Code
 
-pop_size = 2
+pop_size = 4
 p = generate_population(pop_size)
-total_fit = []
-"""for ind in p:
-    total_fit.append(get_fitness(ind))
-print("The fitness values of the individuals in the population are:",total_fit)"""
 
-print("population before mutation:")
-for ind in p:
-    print(ind)
-    
-print()
-print("population after mutation:")
-mutation(p)                                         # often we don't see what has changed because we don't have much hyper-parameters at the moment
-                                                    # and each hyper-parameter doesn't have a lot of different values, thus the function often changes
-                                                    # the values of a hyper-parameter to the same one again
+print("Initial population:", p)
+
 print()
 
-for i in range(0, len(p), 2):
-    ind1 = p[i]
-    ind2 = p[i+1]
-    print("Individual 1:", ind1)
-    print("Individual 2:", ind2)
-    print("children:", crossover(ind1, ind2))
-    
+print("New genration:", crossover_population(p))

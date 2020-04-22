@@ -1,27 +1,27 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from Neural_Network import NeuralNetwork
 import random
-import itertools
+import matplotlib.pyplot as plt
 
 activation_functions = ["sigmoid", "tanh", "relu", "softmax"]
-number_of_neurons = [128]  # depends on the input of the NN
+number_of_neurons = [128]       # depends on the input of the NN
 optimizers = ["adam"]
 dropout_values = [0.2, 0.3, 0.4, 0.5]
 
 
 def generate_individual():
-    final_set = {"activation_function": random.choice(activation_functions), "number_of_neurons" : random.choice(number_of_neurons), "optimizer": random.choice(optimizers), "dropout": random.choice(dropout_values)}
-    return final_set
+    return {"activation_function": random.choice(activation_functions), "number_of_neurons" : random.choice(number_of_neurons), "optimizer": random.choice(optimizers), "dropout": random.choice(dropout_values)}
 
 
+fitness_stored = dict()
 def get_fitness(individual):
     nn = NeuralNetwork(individual["activation_function"], individual["number_of_neurons"], individual["optimizer"], individual["dropout"])
-    fitness = nn.build()
+    if ''.join(str(e) for e in list(individual.values())) in fitness_stored:                        # I take the values of of one individual since they define the individual and convert them into a list
+        fitness = fitness_stored[''.join(str(e) for e in list(individual.values()))]                # which I then convert into a string using list comprehension such that I can use this string as the key
+    else:                                                                                           # where the corresponding value is the fitness value of the individual
+        fitness = nn.build()
+        fitness_stored[''.join(str(e) for e in list(individual.values()))] = fitness                # I store the fitness value of the individual which is not already in the stored_fitness dictionary
     return fitness
-
-# With this approach, we receive a fitness value between 0 and 1, thus we don't have to calculate the fitness of the whole population to then afterwards
-# calculate the fitness of each individual between 0 and 1. (we can remove lines 56 and 57 in "guessPassword1" and modify line 58 such that we can store
-# directly the fitness score received by this function ("get_fitness") without calculating anything)
 
 
 def generate_population(popSize):
@@ -35,11 +35,11 @@ def generate_population(popSize):
 def mutation(pop):
     mutated_pop = []
     for individual in pop:
-        mutProb = random.uniform(0, 0.5)                                # at most 50% of the genes can be changed because the mutation probability will be generated between 0% and 50%
-        for i in range(1, len(individual)+1):                           # i will iterate from 1 to the len of the individual (number of hyper-parameters that could be changed)
-            if (mutProb * len(individual)) < i:                         # i represents the number of genes (hyper-parameters) which will be changed
-                for j in range(i):                                      # we change as many genes as the values of i is (e.g. if i=2 then 2 hyper-parameters will be changed)
-                    g = random.choice(list(individual.keys()))          # we take one random gene (hyper-parameter) of the chromosome to change it 
+        mutProb = random.uniform(0, 0.5)                                                                    # at most 50% of the genes can be changed because the mutation probability will be generated between 0% and 50%
+        for i in range(1, len(individual)+1):                                                               # i will iterate from 1 to the len of the individual (number of hyper-parameters that could be changed)
+            if (mutProb * len(individual)) < i:                                                             # i represents the number of genes (hyper-parameters) which will be changed
+                for j in range(i):                                                                          # we change as many genes as the values of i is (e.g. if i=2 then 2 hyper-parameters will be changed)
+                    g = random.choice(list(individual.keys()))                                              # we take one random gene (hyper-parameter) of the chromosome to change it
                     if g == "activation_function":
                         individual[g] = random.choice(activation_functions)
                     if g == "number_of_neurons":
@@ -78,28 +78,45 @@ def crossover(individual1, individual2):
     child2_part1 = dict(list(individual2.items())[0: crossPoint])               # part from individual 2 for child 2 (genes before crossPoint)
     child2_part2 = dict(list(individual1.items())[crossPoint::])                # part from individual 1 for child 2 (genes after crossPoint)
     child2 = {**child2_part1, **child2_part2}                                   # combining the two parts to create child 2
-    
+
     return [child1, child2]
 
 
-def crossover_population(pop):
+def crossover_population(pop, cross_prob):
     new_pop = []
-    for i in range(len(pop) // 2):                                              # we take in range "len(pop) // 2" because there are always two elements removed
+    for i in range(int(cross_prob * len(pop)) // 2):                            # we take in range "cross_prob * len(pop) // 2" because there are always two elements removed
         parents = roulette_wheel_selection(pop, 2)                              # we choose two parents out of the population
         pop.remove(parents[0])                                                  # we delete the two parents that we chose out of the population such that
-        if parents[1] in pop:                                                   # this if statement is necessary because sometimes I got an error message that parents[1] is no tn the list and thus cannot be removed
-            pop.remove(parents[1])                                              # they cannot be selected again as parents
+        pop.remove(parents[1])                                                  # they cannot be selected again as parents (sometimes I get an error that parents[1] is not in the list)
         new_pop += crossover(parents[0], parents[1])                            # add the offspring to the list which contains the new generation
-    return new_pop
+    return pop + new_pop                                                        # combine the new children with the individuals that were not used as parents
 
 
-# Test Code
+# Main Code
 
-pop_size = 4
-p = generate_population(pop_size)
+pop_size = 6
+number_of_generations = 4
+crossover_prob = 0.5
+best_fitness_values = []
 
-print("Initial population:", p)
+population = generate_population(pop_size)
 
-print()
+for i in range(number_of_generations):                                          # how often the following actions are repeated
+    population = crossover_population(population, crossover_prob)
+    print("population after crossover", population)
+    population = mutation(population)
+    print("population after mutation:", population)
+    fitness_values_of_pop = []
+    for ind in population:
+        fitness_values_of_pop.append(get_fitness(ind))
+    best_fitness_values.append(max(fitness_values_of_pop))
+        
+print("Best fitness values of individuals in each generation:", best_fitness_values)
 
-print("New genration:", crossover_population(p))
+plt.plot([i for i in range(1, len(best_fitness_values)+1)], best_fitness_values)
+plt.ylabel("Fitness values")
+plt.xlabel("Generations")
+plt.axis([1, len(best_fitness_values), 0.9 , 1])
+plt.xticks([i for i in range(1, len(best_fitness_values)+1)])
+plt.show()
+    

@@ -2,11 +2,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import tensorflow as tf
 
 class NeuralNetwork:
-    def __init__(self, activation_function, number_of_neurons, optimizer, dropout):
+    def __init__(self, activation_function, number_of_neurons, optimizer, dropout, epoch_size, learning_rate, batch_size):
         self.act = activation_function
         self.neurons = number_of_neurons
         self.opt = optimizer
         self.drop = dropout
+        self.epoch_size = epoch_size
+        self.learning_rate = learning_rate
+        self.batch_size = batch_size
         
     def build(self):
         mnist = tf.keras.datasets.mnist
@@ -17,7 +20,7 @@ class NeuralNetwork:
             tf.keras.layers.Flatten(input_shape=(28, 28)),
             tf.keras.layers.Dense(self.neurons, activation=self.act),
             tf.keras.layers.Dropout(self.drop),
-            tf.keras.layers.Dense(10)
+            tf.keras.layers.Dense(10)                                      # units: dimension of output space (10)
         ])
 
         predictions = model(x_train[:1]).numpy()
@@ -26,11 +29,13 @@ class NeuralNetwork:
 
         loss_fn(y_train[:1], predictions).numpy()
 
-        model.compile(optimizer=self.opt,
+        opt = self.opt(learning_rate=self.learning_rate)
+
+        model.compile(optimizer=opt,
                       loss=loss_fn,
                       metrics=['accuracy'])
 
-        model.fit(x_train, y_train, epochs=5)
+        model.fit(x_train, y_train, epochs=self.epoch_size, batch_size=self.batch_size)
     
         return(model.evaluate(x_test, y_test, verbose=2)[1])                # return the accuracy of the evaluation of the NN to use it for the get_fitness function in the MainProgramm
 

@@ -1,24 +1,28 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
+import tensorflow as tf
 from Neural_Network import NeuralNetwork
 import random
 import matplotlib.pyplot as plt
 
 activation_functions = ["sigmoid", "tanh", "relu", "softmax"]
-number_of_neurons = [128]       # depends on the input of the NN
-optimizers = ["adam"]
+number_of_neurons = [128, 256, 512, 1024]
+optimizers = [tf.keras.optimizers.Adam, tf.keras.optimizers.SGD]
 dropout_values = [0.2, 0.3, 0.4, 0.5]
-
+epoch_size = [2, 3, 4, 5, 6, 7, 8]
+learning_rate = [0.1, 0.01, 0.001, 0.0001]
+batch_size = [64, 128, 256, 512]
 
 def generate_individual():
-    return {"activation_function": random.choice(activation_functions), "number_of_neurons" : random.choice(number_of_neurons), "optimizer": random.choice(optimizers), "dropout": random.choice(dropout_values)}
+    return {"activation_function": random.choice(activation_functions), "number_of_neurons" : random.choice(number_of_neurons), "optimizer": random.choice(optimizers), "dropout": random.choice(dropout_values),
+            "epoch_size": random.choice(epoch_size), "learning_rate": random.choice(learning_rate), "batch_size": random.choice(batch_size)}
 
 
 fitness_stored = dict()
 def get_fitness(individual):
-    nn = NeuralNetwork(individual["activation_function"], individual["number_of_neurons"], individual["optimizer"], individual["dropout"])
     if ''.join(str(e) for e in list(individual.values())) in fitness_stored:                        # I take the values of of one individual since they define the individual and convert them into a list
         fitness = fitness_stored[''.join(str(e) for e in list(individual.values()))]                # which I then convert into a string using list comprehension such that I can use this string as the key
     else:                                                                                           # where the corresponding value is the fitness value of the individual
+        nn = NeuralNetwork(individual["activation_function"], individual["number_of_neurons"], individual["optimizer"], individual["dropout"], individual["epoch_size"], individual["learning_rate"], individual["batch_size"])
         fitness = nn.build()
         fitness_stored[''.join(str(e) for e in list(individual.values()))] = fitness                # I store the fitness value of the individual which is not already in the stored_fitness dictionary
     return fitness
@@ -38,18 +42,19 @@ def mutation(pop):
         mutProb = random.uniform(0, 0.5)                                                                    # at most 50% of the genes can be changed because the mutation probability will be generated between 0% and 50%
         for i in range(1, len(individual)+1):                                                               # i will iterate from 1 to the len of the individual (number of hyper-parameters that could be changed)
             if (mutProb * len(individual)) < i:                                                             # i represents the number of genes (hyper-parameters) which will be changed
-                for j in range(i):                                                                          # we change as many genes as the values of i is (e.g. if i=2 then 2 hyper-parameters will be changed)
-                    g = random.choice(list(individual.keys()))                                              # we take one random gene (hyper-parameter) of the chromosome to change it
-                    if g == "activation_function":
-                        individual[g] = random.choice(activation_functions)
-                    if g == "number_of_neurons":
-                        individual[g] = random.choice(number_of_neurons)
-                    if g == "optimizer":
-                        individual[g] = random.choice(optimizers)
-                    if g == "dropout":
-                        individual[g] = random.choice(dropout_values)
-                mutated_pop.append(individual)
+                n = i
                 break
+        for j in range(n):                                                                                  # we change as many genes as the values of i is (e.g. if =2 then 2 hyper-parameters will be changed)
+            g = random.choice(list(individual.keys()))                                                      # we take one random gene (hyper-parameter) of the chromosome to change it
+            if g == "activation_function":
+                individual[g] = random.choice(activation_functions)
+            if g == "number_of_neurons":
+                individual[g] = random.choice(number_of_neurons)
+            if g == "optimizer":
+                individual[g] = random.choice(optimizers)
+            if g == "dropout":
+                individual[g] = random.choice(dropout_values)
+        mutated_pop.append(individual)
     return mutated_pop
 
 
@@ -82,7 +87,7 @@ def crossover(individual1, individual2):
     return [child1, child2]
 
 
-def crossover_population(pop, cross_prob):
+def crossover_population(pop, cross_prob ):
     new_pop = []
     for i in range(int(cross_prob * len(pop)) // 2):                            # we take in range "cross_prob * len(pop) // 2" because there are always two elements removed
         parents = roulette_wheel_selection(pop, 2)                              # we choose two parents out of the population
@@ -119,4 +124,3 @@ plt.xlabel("Generations")
 plt.axis([1, len(best_fitness_values), 0.9 , 1])
 plt.xticks([i for i in range(1, len(best_fitness_values)+1)])
 plt.show()
-    

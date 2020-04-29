@@ -54,6 +54,12 @@ def mutation(pop):
                 individual[g] = random.choice(optimizers)
             if g == "dropout":
                 individual[g] = random.choice(dropout_values)
+            if g == "epoch_size":
+                individual[g] = random.choice(epoch_size)
+            if g == "learning_rate":
+                individual[g] = random.choice(learning_rate)
+            if g == "batch_size":
+                individual[g] = random.choice(batch_size)
         mutated_pop.append(individual)
     return mutated_pop
 
@@ -87,10 +93,9 @@ def crossover(individual1, individual2):
     return [child1, child2]
 
 
-def crossover_population(pop, cross_prob ):
+def crossover_population(pop, parents):
     new_pop = []
-    for i in range(int(cross_prob * len(pop)) // 2):                            # we take in range "cross_prob * len(pop) // 2" because there are always two elements removed
-        parents = roulette_wheel_selection(pop, 2)                              # we choose two parents out of the population
+    for i in range(len(parents) // 2):                                              # we take in range "len(pop) // 2" because there are always two elements removed
         pop.remove(parents[0])                                                  # we delete the two parents that we chose out of the population such that
         pop.remove(parents[1])                                                  # they cannot be selected again as parents (sometimes I get an error that parents[1] is not in the list)
         new_pop += crossover(parents[0], parents[1])                            # add the offspring to the list which contains the new generation
@@ -99,7 +104,7 @@ def crossover_population(pop, cross_prob ):
 
 # Main Code
 
-pop_size = 6
+pop_size = 2
 number_of_generations = 4
 crossover_prob = 0.5
 best_fitness_values = []
@@ -107,7 +112,8 @@ best_fitness_values = []
 population = generate_population(pop_size)
 
 for i in range(number_of_generations):                                          # how often the following actions are repeated
-    population = crossover_population(population, crossover_prob)
+    parents = roulette_wheel_selection(population, int(len(population)*crossover_prob))
+    population = crossover_population(population, parents)
     print("population after crossover", population)
     population = mutation(population)
     print("population after mutation:", population)
@@ -117,10 +123,22 @@ for i in range(number_of_generations):                                          
     best_fitness_values.append(max(fitness_values_of_pop))
         
 print("Best fitness values of individuals in each generation:", best_fitness_values)
+print("All fitness values that were computed:", list(fitness_stored.values()))
 
-plt.plot([i for i in range(1, len(best_fitness_values)+1)], best_fitness_values)
-plt.ylabel("Fitness values")
-plt.xlabel("Generations")
-plt.axis([1, len(best_fitness_values), 0.9 , 1])
+# plotting results
+fig, ax1 = plt.subplots()
+
+ax1.set_xlabel("Generations", color="r")
+ax1.set_ylabel("Fitness values")
+ax1.plot([i for i in range(1, len(best_fitness_values)+1)], best_fitness_values, label= "Best fitness values", color="r")
+ax1.tick_params(axis='x', labelcolor="r")
 plt.xticks([i for i in range(1, len(best_fitness_values)+1)])
+
+ax2 = ax1.twiny()
+
+ax2.set_xlabel("Number of fitness values", color="b")
+ax2.plot([i for i in range(1, len(list(fitness_stored.values()))+1)], list(fitness_stored.values()), label= "All fitness values", color="b")
+ax2.tick_params(axis='x', labelcolor="b")
+plt.xticks([i for i in range(1, len(list(fitness_stored.values()))+1)])
+
 plt.show()

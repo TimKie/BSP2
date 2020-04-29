@@ -95,17 +95,18 @@ def crossover(individual1, individual2):
 
 def crossover_population(pop, parents):
     new_pop = []
-    for i in range(len(parents) // 2):                                              # we take in range "len(pop) // 2" because there are always two elements removed
+    for i in range(len(parents) // 2):                                          # we take in range "len(pop) // 2" because there are always two elements removed
         pop.remove(parents[0])                                                  # we delete the two parents that we chose out of the population such that
-        pop.remove(parents[1])                                                  # they cannot be selected again as parents (sometimes I get an error that parents[1] is not in the list)
+        if parents[1] in pop:
+            pop.remove(parents[1])                                              # they cannot be selected again as parents (sometimes I get an error that parents[1] is not in the list)
         new_pop += crossover(parents[0], parents[1])                            # add the offspring to the list which contains the new generation
     return pop + new_pop                                                        # combine the new children with the individuals that were not used as parents
 
 
 # Main Code
 
-pop_size = 2
-number_of_generations = 4
+pop_size = 6
+number_of_generations = 5
 crossover_prob = 0.5
 best_fitness_values = []
 
@@ -139,6 +140,5 @@ ax2 = ax1.twiny()
 ax2.set_xlabel("Number of fitness values", color="b")
 ax2.plot([i for i in range(1, len(list(fitness_stored.values()))+1)], list(fitness_stored.values()), label= "All fitness values", color="b")
 ax2.tick_params(axis='x', labelcolor="b")
-plt.xticks([i for i in range(1, len(list(fitness_stored.values()))+1)])
 
 plt.show()

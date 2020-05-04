@@ -5,16 +5,17 @@ import random
 import matplotlib.pyplot as plt
 
 activation_functions = ["sigmoid", "tanh", "relu", "softmax"]
-number_of_neurons = [128, 256, 512, 1024]
+number_of_neurons = [32, 64, 128, 256, 512, 1024]
 optimizers = [tf.keras.optimizers.Adam, tf.keras.optimizers.SGD]
-dropout_values = [0.2, 0.3, 0.4, 0.5]
+dropout_values = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
 epoch_size = [2, 3, 4, 5, 6, 7, 8]
 learning_rate = [0.1, 0.01, 0.001, 0.0001]
-batch_size = [64, 128, 256, 512]
+batch_size = [32, 64, 128, 256, 512]
 
 def generate_individual():
-    return {"activation_function": random.choice(activation_functions), "number_of_neurons" : random.choice(number_of_neurons), "optimizer": random.choice(optimizers), "dropout": random.choice(dropout_values),
-            "epoch_size": random.choice(epoch_size), "learning_rate": random.choice(learning_rate), "batch_size": random.choice(batch_size)}
+    return {"activation_function": random.choice(activation_functions), "number_of_neurons" : random.choice(number_of_neurons),
+            "optimizer": random.choice(optimizers), "dropout": random.choice(dropout_values), "epoch_size": random.choice(epoch_size),
+            "learning_rate": random.choice(learning_rate), "batch_size": random.choice(batch_size)}
 
 
 fitness_stored = dict()
@@ -93,28 +94,37 @@ def crossover(individual1, individual2):
     return [child1, child2]
 
 
-def crossover_population(pop, parents):
+def crossover_population(pop, cross_prob):
     new_pop = []
-    for i in range(len(parents) // 2):                                          # we take in range "len(pop) // 2" because there are always two elements removed
-        pop.remove(parents[0])                                                  # we delete the two parents that we chose out of the population such that
-        if parents[1] in pop:
-            pop.remove(parents[1])                                              # they cannot be selected again as parents (sometimes I get an error that parents[1] is not in the list)
-        new_pop += crossover(parents[0], parents[1])                            # add the offspring to the list which contains the new generation
-    return pop + new_pop                                                        # combine the new children with the individuals that were not used as parents
+    num = int(len(pop) * cross_prob)
+    for i in range(num // 2):
+        parent1, parent2 = random.sample(pop, 2)
+        new_pop += crossover(parent1, parent2)
+        pop.remove(parent1)
+        pop.remove(parent2)
+    return pop + new_pop
+
+
+"""for i in range(len(parents) // 2):                   # we take in range "len(pop) // 2" because there are always two elements removed
+    pop.remove(parents[0])                              # we delete the two parents that we chose out of the population such that
+    if parents[1] in pop:
+        pop.remove(parents[1])                          # they cannot be selected again as parents (sometimes I get an error that parents[1] is not in the list)
+    new_pop += crossover(parents[0], parents[1])        # add the offspring to the list which contains the new generation
+    return pop + new_pop                                # combine the new children with the individuals that were not used as parents"""
 
 
 # Main Code
 
-pop_size = 6
+popSize = 10
 number_of_generations = 5
 crossover_prob = 0.5
 best_fitness_values = []
 
-population = generate_population(pop_size)
+population = generate_population(popSize)
 
 for i in range(number_of_generations):                                          # how often the following actions are repeated
-    parents = roulette_wheel_selection(population, int(len(population)*crossover_prob))
-    population = crossover_population(population, parents)
+    parents = roulette_wheel_selection(population, popSize)
+    population = crossover_population(parents, crossover_prob)
     print("population after crossover", population)
     population = mutation(population)
     print("population after mutation:", population)
@@ -122,7 +132,7 @@ for i in range(number_of_generations):                                          
     for ind in population:
         fitness_values_of_pop.append(get_fitness(ind))
     best_fitness_values.append(max(fitness_values_of_pop))
-        
+
 print("Best fitness values of individuals in each generation:", best_fitness_values)
 print("All fitness values that were computed:", list(fitness_stored.values()))
 

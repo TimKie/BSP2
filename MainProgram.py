@@ -3,6 +3,10 @@ import tensorflow as tf
 from Neural_Network import NeuralNetwork
 import random
 import matplotlib.pyplot as plt
+import numpy as np
+from datetime import datetime
+import time
+random.seed(4444)
 
 activation_functions = ["sigmoid", "tanh", "relu", "softmax"]
 number_of_neurons = [32, 64, 128, 256, 512, 1024]
@@ -115,12 +119,18 @@ def crossover_population(pop, cross_prob):
 
 # Main Code
 
-popSize = 10
-number_of_generations = 5
+popSize = 4
+number_of_generations = 2
 crossover_prob = 0.5
-best_fitness_values = []
+max_fitness_values = []
+min_fitness_values = []
+median_fitness_values = []
+best_sets_of_hyper_para = []
 
 population = generate_population(popSize)
+
+time_before_execution = datetime.now()
+print("Current Time:", time_before_execution.strftime("%H:%M:%S"))
 
 for i in range(number_of_generations):                                          # how often the following actions are repeated
     parents = roulette_wheel_selection(population, popSize)
@@ -129,26 +139,39 @@ for i in range(number_of_generations):                                          
     population = mutation(population)
     print("population after mutation:", population)
     fitness_values_of_pop = []
+    sets_of_ind_of_pop = []
     for ind in population:
         fitness_values_of_pop.append(get_fitness(ind))
-    best_fitness_values.append(max(fitness_values_of_pop))
+        sets_of_ind_of_pop.append(ind)
+    max_fitness_values.append(max(fitness_values_of_pop))
+    min_fitness_values.append(min(fitness_values_of_pop))
+    median_fitness_values.append((max(fitness_values_of_pop) + min(fitness_values_of_pop)) / 2)
 
-print("Best fitness values of individuals in each generation:", best_fitness_values)
+    # get the index of the individual with the best fitness value of this generation and using this index to find the
+    # corresponding set of hyper-parameters in the list of all sets in the generation
+    best_sets_of_hyper_para.append(sets_of_ind_of_pop[max_fitness_values.index(max(fitness_values_of_pop))])
+
+time_after_execution = datetime.now()
+print("Current Time:", time_after_execution.strftime("%H:%M:%S"))
+
+print("Best fitness values of individuals in each generation:", max_fitness_values, min_fitness_values, median_fitness_values)
 print("All fitness values that were computed:", list(fitness_stored.values()))
+print("The best fitness value of the last generation is:", max_fitness_values[-1], "with the corresponding set of hyper-parameters:", best_sets_of_hyper_para[-1])
+print("The execution time is:", (time_after_execution - time_before_execution).total_seconds(), "seconds")
 
 # plotting results
 fig, ax1 = plt.subplots()
 
 ax1.set_xlabel("Generations", color="r")
 ax1.set_ylabel("Fitness values")
-ax1.plot([i for i in range(1, len(best_fitness_values)+1)], best_fitness_values, label= "Best fitness values", color="r")
+ax1.plot([i for i in range(1, len(max_fitness_values)+1)], max_fitness_values, label= "Best fitness values", color="r")
 ax1.tick_params(axis='x', labelcolor="r")
-plt.xticks([i for i in range(1, len(best_fitness_values)+1)])
+plt.xticks([i for i in range(1, len(max_fitness_values)+1)])
 
 ax2 = ax1.twiny()
 
 ax2.set_xlabel("Number of fitness values", color="b")
-ax2.plot([i for i in range(1, len(list(fitness_stored.values()))+1)], list(fitness_stored.values()), label= "All fitness values", color="b")
+ax2.plot([i for i in range(1, len(list(fitness_stored.values()))+1)], list(fitness_stored.values()), '.', label= "All fitness values", color="b")
 ax2.tick_params(axis='x', labelcolor="b")
 
 plt.show()

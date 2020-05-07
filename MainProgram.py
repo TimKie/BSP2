@@ -119,8 +119,8 @@ def crossover_population(pop, cross_prob):
 
 # Main Code
 
-popSize = 4
-number_of_generations = 2
+popSize = 16
+number_of_generations = 20
 crossover_prob = 0.5
 max_fitness_values = []
 min_fitness_values = []
@@ -154,7 +154,9 @@ for i in range(number_of_generations):                                          
 time_after_execution = datetime.now()
 print("Current Time:", time_after_execution.strftime("%H:%M:%S"))
 
-print("Best fitness values of individuals in each generation:", max_fitness_values, min_fitness_values, median_fitness_values)
+print("Best fitness values of individuals in each generation:", max_fitness_values)
+print("Median fitness values of individuals in each generation:", median_fitness_values)
+print("Worst fitness values of individuals in each generation:", min_fitness_values)
 print("All fitness values that were computed:", list(fitness_stored.values()))
 print("The best fitness value of the last generation is:", max_fitness_values[-1], "with the corresponding set of hyper-parameters:", best_sets_of_hyper_para[-1])
 print("The execution time is:", (time_after_execution - time_before_execution).total_seconds(), "seconds")
@@ -164,7 +166,7 @@ fig, ax1 = plt.subplots()
 
 ax1.set_xlabel("Generations", color="r")
 ax1.set_ylabel("Fitness values")
-ax1.plot([i for i in range(1, len(max_fitness_values)+1)], max_fitness_values, label= "Best fitness values", color="r")
+bp = ax1.boxplot([[max_fitness_values[i], median_fitness_values[i], min_fitness_values[i]] for i in range(len(max_fitness_values))], boxprops=dict(color="red"), capprops=dict(color="red"), whiskerprops=dict(color="red"), medianprops=dict(color="black"))
 ax1.tick_params(axis='x', labelcolor="r")
 plt.xticks([i for i in range(1, len(max_fitness_values)+1)])
 

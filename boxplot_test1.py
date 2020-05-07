@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
 np.random.seed(19680801)
 
 # fake up some data
-spread = np.random.rand(50) * 100
-center = np.ones(25) * 50
-flier_high = np.random.rand(10) * 100 + 100
-flier_low = np.random.rand(10) * -100
+spread = 500
+center = 400
+flier_high = 700
+flier_low = -600
 data = np.concatenate((spread, center, flier_high, flier_low))
 
 fig1, ax1 = plt.subplots()
 ax1.set_title('Basic Plot')
 ax1.boxplot(data)
 
-
+plt.show()

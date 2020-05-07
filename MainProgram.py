@@ -3,9 +3,7 @@ import tensorflow as tf
 from Neural_Network import NeuralNetwork
 import random
 import matplotlib.pyplot as plt
-import numpy as np
 from datetime import datetime
-import time
 random.seed(4444)
 
 activation_functions = ["sigmoid", "tanh", "relu", "softmax"]

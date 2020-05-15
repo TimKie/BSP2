@@ -4,6 +4,7 @@ from Neural_Network import NeuralNetwork
 import random
 import matplotlib.pyplot as plt
 from datetime import datetime
+import statistics
 random.seed(4444)
 
 activation_functions = ["sigmoid", "tanh", "relu", "softmax"]
@@ -117,8 +118,8 @@ def crossover_population(pop, cross_prob):
 
 # Main Code
 
-popSize = 16
-number_of_generations = 20
+popSize = 8
+number_of_generations = 16
 crossover_prob = 0.5
 max_fitness_values = []
 min_fitness_values = []
@@ -131,23 +132,27 @@ time_before_execution = datetime.now()
 print("Current Time:", time_before_execution.strftime("%H:%M:%S"))
 
 for i in range(number_of_generations):                                          # how often the following actions are repeated
-    parents = roulette_wheel_selection(population, popSize)
-    population = crossover_population(parents, crossover_prob)
-    print("population after crossover", population)
-    population = mutation(population)
-    print("population after mutation:", population)
     fitness_values_of_pop = []
     sets_of_ind_of_pop = []
     for ind in population:
         fitness_values_of_pop.append(get_fitness(ind))
         sets_of_ind_of_pop.append(ind)
+
+    parents = roulette_wheel_selection(population, popSize)
+    population = crossover_population(parents, crossover_prob)
+    # print("population after crossover", population)
+    population = mutation(population)
+    # print("population after mutation:", population)
+
     max_fitness_values.append(max(fitness_values_of_pop))
     min_fitness_values.append(min(fitness_values_of_pop))
-    median_fitness_values.append((max(fitness_values_of_pop) + min(fitness_values_of_pop)) / 2)
+    # The "average" is when you add up all the numbers and then divide by the number of numbers.
+    # The "median" is the middle value in the list of numbers.
+    median_fitness_values.append(statistics.median(fitness_values_of_pop))
 
     # get the index of the individual with the best fitness value of this generation and using this index to find the
     # corresponding set of hyper-parameters in the list of all sets in the generation
-    best_sets_of_hyper_para.append(sets_of_ind_of_pop[max_fitness_values.index(max(fitness_values_of_pop))])
+    best_sets_of_hyper_para.append(sets_of_ind_of_pop[fitness_values_of_pop.index(max(fitness_values_of_pop))])
 
 time_after_execution = datetime.now()
 print("Current Time:", time_after_execution.strftime("%H:%M:%S"))

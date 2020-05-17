@@ -107,14 +107,7 @@ def crossover_population(pop, cross_prob):
         pop.remove(parent2)
     return pop + new_pop
 
-
-"""for i in range(len(parents) // 2):                   # we take in range "len(pop) // 2" because there are always two elements removed
-    pop.remove(parents[0])                              # we delete the two parents that we chose out of the population such that
-    if parents[1] in pop:
-        pop.remove(parents[1])                          # they cannot be selected again as parents (sometimes I get an error that parents[1] is not in the list)
-    new_pop += crossover(parents[0], parents[1])        # add the offspring to the list which contains the new generation
-    return pop + new_pop                                # combine the new children with the individuals that were not used as parents"""
-
+m
 
 # Main Code
 

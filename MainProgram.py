@@ -22,10 +22,13 @@ def generate_individual():
 
 
 fitness_stored = dict()
+fitness_values_retreived_without_running_NN = 0
 def get_fitness(individual):
+    global fitness_values_retreived_without_running_NN
     if ''.join(str(e) for e in list(individual.values())) in fitness_stored:                        # I take the values of of one individual since they define the individual and convert them into a list
-        fitness = fitness_stored[''.join(str(e) for e in list(individual.values()))]                # which I then convert into a string using list comprehension such that I can use this string as the key
-    else:                                                                                           # where the corresponding value is the fitness value of the individual
+        fitness = fitness_stored[''.join(str(e) for e in list(individual.values()))]                # which I then convert into a string using list comprehension such that I can use this string as the
+        fitness_values_retreived_without_running_NN += 1                                            # key where the corresponding value is the fitness value of the individual
+    else:                                                                                           
         nn = NeuralNetwork(individual["activation_function"], individual["number_of_neurons"], individual["optimizer"], individual["dropout"], individual["epoch_size"], individual["learning_rate"], individual["batch_size"])
         fitness = nn.build()
         fitness_stored[''.join(str(e) for e in list(individual.values()))] = fitness                # I store the fitness value of the individual which is not already in the stored_fitness dictionary
@@ -107,45 +110,43 @@ def crossover_population(pop, cross_prob):
         pop.remove(parent2)
     return pop + new_pop
 
-m
+
 
 # Main Code
 
-popSize = 8
-number_of_generations = 16
+popSize = 30
+number_of_generations = 30
 crossover_prob = 0.5
 max_fitness_values = []
 min_fitness_values = []
 median_fitness_values = []
 best_sets_of_hyper_para = []
+fitness_values_of_pop = dict()
 
 population = generate_population(popSize)
 
 time_before_execution = datetime.now()
 print("Current Time:", time_before_execution.strftime("%H:%M:%S"))
 
-for i in range(number_of_generations):                                          # how often the following actions are repeated
-    fitness_values_of_pop = []
+for i in range(number_of_generations):
+    fitness_values_of_gen = []
     sets_of_ind_of_pop = []
     for ind in population:
-        fitness_values_of_pop.append(get_fitness(ind))
+        fitness_values_of_gen.append(get_fitness(ind))
         sets_of_ind_of_pop.append(ind)
 
     parents = roulette_wheel_selection(population, popSize)
     population = crossover_population(parents, crossover_prob)
-    # print("population after crossover", population)
     population = mutation(population)
-    # print("population after mutation:", population)
 
-    max_fitness_values.append(max(fitness_values_of_pop))
-    min_fitness_values.append(min(fitness_values_of_pop))
-    # The "average" is when you add up all the numbers and then divide by the number of numbers.
-    # The "median" is the middle value in the list of numbers.
-    median_fitness_values.append(statistics.median(fitness_values_of_pop))
+    fitness_values_of_pop[str(i)] = fitness_values_of_gen
+    max_fitness_values.append(max(fitness_values_of_gen))
+    min_fitness_values.append(min(fitness_values_of_gen))
+    median_fitness_values.append(statistics.median(fitness_values_of_gen))
 
     # get the index of the individual with the best fitness value of this generation and using this index to find the
     # corresponding set of hyper-parameters in the list of all sets in the generation
-    best_sets_of_hyper_para.append(sets_of_ind_of_pop[fitness_values_of_pop.index(max(fitness_values_of_pop))])
+    best_sets_of_hyper_para.append(sets_of_ind_of_pop[fitness_values_of_gen.index(max(fitness_values_of_gen))])
 
 time_after_execution = datetime.now()
 print("Current Time:", time_after_execution.strftime("%H:%M:%S"))
@@ -154,15 +155,23 @@ print("Best fitness values of individuals in each generation:", max_fitness_valu
 print("Median fitness values of individuals in each generation:", median_fitness_values)
 print("Worst fitness values of individuals in each generation:", min_fitness_values)
 print("All fitness values that were computed:", list(fitness_stored.values()))
+print()
 print("The best fitness value of the last generation is:", max_fitness_values[-1], "with the corresponding set of hyper-parameters:", best_sets_of_hyper_para[-1])
+print()
+print("The best fitness value overall is:", max(max_fitness_values), "with the corresponding set of hyper-parameters:", best_sets_of_hyper_para[max_fitness_values.index(max(max_fitness_values))])
+print()
+# problem with value of fitness_values_retreived_without_running_NN, it is a lot to big
+print("Length of fitness_stored dictionary:", len(fitness_stored), "versus number of times the fitness value was retrived directly from this dictionary (without running the NN):", fitness_values_retreived_without_running_NN)
+print()
 print("The execution time is:", (time_after_execution - time_before_execution).total_seconds(), "seconds")
+
 
 # plotting results
 fig, ax1 = plt.subplots()
 
 ax1.set_xlabel("Generations", color="r")
 ax1.set_ylabel("Fitness values")
-bp = ax1.boxplot([[max_fitness_values[i], median_fitness_values[i], min_fitness_values[i]] for i in range(len(max_fitness_values))], boxprops=dict(color="red"), capprops=dict(color="red"), whiskerprops=dict(color="red"), medianprops=dict(color="black"))
+bp = ax1.boxplot([fitness_values_of_pop[str(i)] for i in range (len(fitness_values_of_pop))], boxprops=dict(color="red"), capprops=dict(color="red"), whiskerprops=dict(color="red"), medianprops=dict(color="black"))
 ax1.tick_params(axis='x', labelcolor="r")
 plt.xticks([i for i in range(1, len(max_fitness_values)+1)])
 

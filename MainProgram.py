@@ -16,19 +16,20 @@ learning_rate = [0.1, 0.01, 0.001, 0.0001]
 batch_size = [32, 64, 128, 256, 512]
 
 def generate_individual():
-    return {"activation_function": random.choice(activation_functions), "number_of_neurons" : random.choice(number_of_neurons),
-            "optimizer": random.choice(optimizers), "dropout": random.choice(dropout_values), "epoch_size": random.choice(epoch_size),
-            "learning_rate": random.choice(learning_rate), "batch_size": random.choice(batch_size)}
+    return {"activation_function": random.choice(activation_functions), 
+            "number_of_neurons" : random.choice(number_of_neurons),
+            "optimizer": random.choice(optimizers), 
+            "dropout": random.choice(dropout_values), 
+            "epoch_size": random.choice(epoch_size),
+            "learning_rate": random.choice(learning_rate), 
+            "batch_size": random.choice(batch_size)}
 
 
 fitness_stored = dict()
-fitness_values_retreived_without_running_NN = 0
 def get_fitness(individual):
-    global fitness_values_retreived_without_running_NN
     if ''.join(str(e) for e in list(individual.values())) in fitness_stored:                        # I take the values of of one individual since they define the individual and convert them into a list
         fitness = fitness_stored[''.join(str(e) for e in list(individual.values()))]                # which I then convert into a string using list comprehension such that I can use this string as the
-        fitness_values_retreived_without_running_NN += 1                                            # key where the corresponding value is the fitness value of the individual
-    else:                                                                                           
+    else:                                                                                           # key where the corresponding value is the fitness value of the individual                                                          
         nn = NeuralNetwork(individual["activation_function"], individual["number_of_neurons"], individual["optimizer"], individual["dropout"], individual["epoch_size"], individual["learning_rate"], individual["batch_size"])
         fitness = nn.build()
         fitness_stored[''.join(str(e) for e in list(individual.values()))] = fitness                # I store the fitness value of the individual which is not already in the stored_fitness dictionary
@@ -114,8 +115,8 @@ def crossover_population(pop, cross_prob):
 
 # Main Code
 
-popSize = 30
-number_of_generations = 30
+popSize = 5
+number_of_generations = 2
 crossover_prob = 0.5
 max_fitness_values = []
 min_fitness_values = []
@@ -160,9 +161,7 @@ print("The best fitness value of the last generation is:", max_fitness_values[-1
 print()
 print("The best fitness value overall is:", max(max_fitness_values), "with the corresponding set of hyper-parameters:", best_sets_of_hyper_para[max_fitness_values.index(max(max_fitness_values))])
 print()
-# problem with value of fitness_values_retreived_without_running_NN, it is a lot to big
-print("Length of fitness_stored dictionary:", len(fitness_stored), "versus number of times the fitness value was retrived directly from this dictionary (without running the NN):", fitness_values_retreived_without_running_NN)
-print()
+print("Length of fitness_stored dictionary (number of computed fitness values):", len(fitness_stored))
 print("The execution time is:", (time_after_execution - time_before_execution).total_seconds(), "seconds")
 
 
